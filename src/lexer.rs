@@ -10,6 +10,9 @@ pub enum Token {
     OpenBrace,
     CloseBrace,
     Semicolon,
+    Negation,
+    BitwiseComplement,
+    LogicalNegation,
 }
 
 pub fn lex(source_code: &str) -> Vec<Token> {
@@ -46,6 +49,21 @@ pub fn lex(source_code: &str) -> Vec<Token> {
             },
             ';' => {
                 tokens.push(Token::Semicolon);
+                chars.next();
+                continue;
+            },
+            '-' => {
+                tokens.push(Token::Negation);
+                chars.next();
+                continue;
+            },
+            '~' => {
+                tokens.push(Token::BitwiseComplement);
+                chars.next();
+                continue;
+            },
+            '!' => {
+                tokens.push(Token::LogicalNegation);
                 chars.next();
                 continue;
             },

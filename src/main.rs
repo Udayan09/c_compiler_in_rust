@@ -22,14 +22,16 @@ fn main() {
 
     let contents = fs::read_to_string(file_path)
         .expect("Should have been able to read the file");
-    
-    let tokens:Vec<Token> = lex(&contents);
+    println!("Here is the file string: ");
+    println!("{contents}\n");
 
-    // println!("Tokens (Pretty): {:#?}", tokens);
+    let tokens:Vec<Token> = lex(&contents);
+    
+    println!("Tokens (Pretty): {:#?}", tokens);
 
     let prog = program_parser(tokens);
-    println!("Program: {:#?}", prog);
-    // dbg!(args);
+    println!("Program: {:#?}\n", prog);
+    dbg!(args);
     let asm_string = program_generator(prog);
     println!("Here is the asm code:");
     println!("{asm_string}");

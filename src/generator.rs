@@ -3,6 +3,8 @@ use crate::parser::Function;
 use crate::parser::Statement;
 use crate::parser::Expression;
 
+use crate::parser::UnaryOperation;
+
 pub fn program_generator(prog: Program) -> String {
     let curr_func = prog.function;
     function_generator(curr_func)
@@ -33,6 +35,24 @@ pub fn expression_generator(exp: Expression) -> String {
     match exp {
         Expression::Constant(int_literal) => {
             asm_string = format!("movl ${int_literal}, %eax\n");
+            asm_string
+        }
+        Expression::UnOp(operation, inner_exp) => {
+            asm_string = expression_generator(*inner_exp);
+
+            match operation {
+                UnaryOperation::Negation => {
+                    asm_string.push_str("negl %eax\n");
+                },
+                UnaryOperation::Complement => {
+                    asm_string.push_str("not %eax\n");
+                },
+                UnaryOperation::LogicalNegation => {
+                    asm_string.push_str("cmpl $0, %eax\n");
+                    asm_string.push_str("movl $0, %eax\n");
+                    asm_string.push_str("sete %al\n");
+                },
+            }
             asm_string
         }
     }
