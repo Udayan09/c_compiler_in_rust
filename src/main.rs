@@ -10,7 +10,7 @@ mod generator;
 
 use lexer::Token;
 use lexer::lex;
-use parser::program_parser;
+use parser::parse_program;
 use crate::generator::program_generator;
 
 fn main() {
@@ -29,7 +29,7 @@ fn main() {
     
     println!("Tokens (Pretty): {:#?}", tokens);
 
-    let prog = program_parser(tokens);
+    let prog = parse_program(tokens);
     println!("Program: {:#?}\n", prog);
     dbg!(args);
     let asm_string = program_generator(prog);
@@ -46,6 +46,7 @@ fn main() {
 //Runs GCC to create the executable and delete the intermediate assembly file
 pub fn run_gcc(){
     let mut gcc_command = Command::new("gcc");
+    gcc_command.arg("-g");
     gcc_command.arg("assembly.s");
     gcc_command.arg("-o");
     gcc_command.arg("out");
@@ -56,7 +57,7 @@ pub fn run_gcc(){
         panic!("GCC failed to assemble and link the file!");
     }
 
-    fs::remove_file("assembly.s")
-    .expect("Failed to remove file");
+    // fs::remove_file("assembly.s")
+    // .expect("Failed to remove file");
 }
 

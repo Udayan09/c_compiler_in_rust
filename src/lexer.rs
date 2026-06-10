@@ -13,6 +13,9 @@ pub enum Token {
     Negation,
     BitwiseComplement,
     LogicalNegation,
+    Addition,
+    Multiplication,
+    Division,
 }
 
 pub fn lex(source_code: &str) -> Vec<Token> {
@@ -64,6 +67,21 @@ pub fn lex(source_code: &str) -> Vec<Token> {
             },
             '!' => {
                 tokens.push(Token::LogicalNegation);
+                chars.next();
+                continue;
+            },
+            '+' => {
+                tokens.push(Token::Addition);
+                chars.next();
+                continue;
+            },
+            '/' => {
+                tokens.push(Token::Division);
+                chars.next();
+                continue;
+            },
+            '*' => {
+                tokens.push(Token::Multiplication);
                 chars.next();
                 continue;
             },
