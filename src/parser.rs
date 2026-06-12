@@ -21,6 +21,14 @@ pub enum BinaryOperation {
     Subtraction,
     Multiplication,
     Division,
+    And,
+    Or,
+    Equal,
+    NotEqual,
+    LessThan,
+    LessThanEqual,
+    GreaterThan,
+    GreaterThanEqual,
 }
 
 #[derive(Debug)]
@@ -148,7 +156,99 @@ pub fn parse_statement(iter: &mut Peekable<IntoIter<Token>>) -> Statement {
 //     }
 // }
 
-pub fn parse_exp(iter: &mut Peekable<IntoIter<Token>>) -> Expression{
+pub fn parse_exp(iter: &mut Peekable<IntoIter<Token>>) -> Expression {
+    let mut left_term = parse_equality_exp(iter);
+
+    loop {
+        match iter.peek() {
+            Some(&Token::LogicalAnd) => {
+                iter.next();
+                let right_term = parse_equality_exp(iter);
+                left_term = Expression::BinOp(BinaryOperation::And, Box::new(left_term), Box::new(right_term));
+            },
+            
+            Some(&Token::LogicalOr) => {
+                iter.next();
+                let right_term = parse_equality_exp(iter);
+                left_term = Expression::BinOp(BinaryOperation::Or, Box::new(left_term), Box::new(right_term));
+            },
+            
+            _ => break,
+            
+            None => {
+                panic!("Syntax Error: Unexpected End of File while parsing expression.");
+            },
+        }
+    }
+    left_term
+}
+
+pub fn parse_equality_exp(iter: &mut Peekable<IntoIter<Token>>) -> Expression {
+    let mut left_term = parse_relational_exp(iter);
+
+    loop {
+        match iter.peek() {
+            Some(&Token::Equal) => {
+                iter.next();
+                let right_term = parse_relational_exp(iter);
+                left_term = Expression::BinOp(BinaryOperation::Equal, Box::new(left_term), Box::new(right_term));
+            },
+            
+            Some(&Token::NotEqual) => {
+                iter.next();
+                let right_term = parse_relational_exp(iter);
+                left_term = Expression::BinOp(BinaryOperation::NotEqual, Box::new(left_term), Box::new(right_term));
+            },
+            
+            _ => break,
+            
+            None => {
+                panic!("Syntax Error: Unexpected End of File while parsing expression.");
+            },
+        }
+    }
+    left_term
+}
+
+pub fn parse_relational_exp(iter: &mut Peekable<IntoIter<Token>>) -> Expression {
+    let mut left_term = parse_additive_exp(iter);
+
+    loop {
+        match iter.peek() {
+            Some(&Token::LessThan) => {
+                iter.next();
+                let right_term = parse_additive_exp(iter);
+                left_term = Expression::BinOp(BinaryOperation::LessThan, Box::new(left_term), Box::new(right_term));
+            },
+            
+            Some(&Token::LessThanEqual) => {
+                iter.next();
+                let right_term = parse_additive_exp(iter);
+                left_term = Expression::BinOp(BinaryOperation::LessThanEqual, Box::new(left_term), Box::new(right_term));
+            },
+            Some(&Token::GreaterThan) => {
+                iter.next();
+                let right_term = parse_additive_exp(iter);
+                left_term = Expression::BinOp(BinaryOperation::GreaterThan, Box::new(left_term), Box::new(right_term));
+            },
+            
+            Some(&Token::GreaterThanEqual) => {
+                iter.next();
+                let right_term = parse_additive_exp(iter);
+                left_term = Expression::BinOp(BinaryOperation::GreaterThanEqual, Box::new(left_term), Box::new(right_term));
+            },
+            
+            _ => break,
+            
+            None => {
+                panic!("Syntax Error: Unexpected End of File while parsing expression.");
+            },
+        }
+    }
+    left_term
+}
+
+pub fn parse_additive_exp(iter: &mut Peekable<IntoIter<Token>>) -> Expression{
     let mut left_term = parse_term(iter);
 
     loop {

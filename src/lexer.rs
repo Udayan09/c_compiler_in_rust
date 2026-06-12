@@ -16,6 +16,14 @@ pub enum Token {
     Addition,
     Multiplication,
     Division,
+    LogicalAnd,
+    LogicalOr,
+    Equal,
+    NotEqual,
+    LessThan,
+    LessThanEqual,
+    GreaterThan,
+    GreaterThanEqual,
 }
 
 pub fn lex(source_code: &str) -> Vec<Token> {
@@ -66,8 +74,14 @@ pub fn lex(source_code: &str) -> Vec<Token> {
                 continue;
             },
             '!' => {
-                tokens.push(Token::LogicalNegation);
                 chars.next();
+                if chars.peek() == Some(&'=') {
+                    tokens.push(Token::NotEqual);
+                    chars.next();
+                }
+                else{
+                    tokens.push(Token::LogicalNegation);
+                }
                 continue;
             },
             '+' => {
@@ -83,6 +97,52 @@ pub fn lex(source_code: &str) -> Vec<Token> {
             '*' => {
                 tokens.push(Token::Multiplication);
                 chars.next();
+                continue;
+            },
+            '&' => {
+                chars.next();
+                if chars.peek() == Some(&'&') {
+                    tokens.push(Token::LogicalAnd);
+                    chars.next();
+                    continue;
+                }
+            },
+            '|' => {
+                chars.next();
+                if chars.peek() == Some(&'|') {
+                    tokens.push(Token::LogicalOr);
+                    chars.next();
+                    continue;
+                }
+            },
+            '=' => {
+                chars.next();
+                if chars.peek() == Some(&'=') {
+                    tokens.push(Token::Equal);
+                    chars.next();
+                    continue;
+                }
+            },
+            '<' => {
+                chars.next();
+                if chars.peek() == Some(&'=') {
+                    tokens.push(Token::LessThanEqual);
+                    chars.next();
+                }
+                else{
+                    tokens.push(Token::LessThan);
+                }
+                continue;
+            },
+            '>' => {
+                chars.next();
+                if chars.peek() == Some(&'=') {
+                    tokens.push(Token::GreaterThanEqual);
+                    chars.next();
+                }
+                else{
+                    tokens.push(Token::GreaterThan);
+                }
                 continue;
             },
             _ => {}
