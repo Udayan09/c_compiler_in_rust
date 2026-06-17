@@ -6,6 +6,8 @@ use crate::lexer::Token;
 #[derive(Debug)]
 pub enum Statement {
     Return(Expression),
+    Declare(String, Option <Expression>),
+    Expression (Expression),
 }
 
 #[derive(Debug)]
@@ -36,12 +38,14 @@ pub enum Expression {
     Constant(i32),
     UnOp(UnaryOperation, Box<Expression>),
     BinOp(BinaryOperation, Box<Expression>, Box<Expression>),
+    Assign(String, Box<Expression>),
+    Var(String),
 }
 
 #[derive(Debug)]
 pub struct Function {
     pub name: String,
-    pub body: Statement,
+    pub body: Vec<Statement>,
 }
 
 #[derive(Debug)]
@@ -108,25 +112,63 @@ pub fn parse_function(iter: &mut Peekable<IntoIter<Token>>) -> Function{
     expect_token(iter, Token::CloseParen);
 
     expect_token(iter, Token::OpenBrace);
+    let mut statements:Vec<Statement> = Vec::new();
 
-    let body_statement = parse_statement(iter);
+    while iter.peek() != Some(&Token::CloseBrace) {
+        let curr_statement = parse_statement(iter);
+        statements.push(curr_statement);
+    }
+    
 
     expect_token(iter, Token::CloseBrace);
 
     Function { 
         name: name, 
-        body: body_statement 
+        body: statements 
     }
 }
 
 pub fn parse_statement(iter: &mut Peekable<IntoIter<Token>>) -> Statement {
-    expect_token(iter, Token::KeywordReturn);
 
-    let exp = parse_exp(iter);
+    match iter.peek() {
+        Some(&Token::KeywordReturn) => {        //Return expression
+            iter.next();
+            let exp = parse_exp(iter);
+            expect_token(iter, Token::Semicolon);
+            Statement::Return(exp)
+        },
+        Some(&Token::KeywordInt) => {           //Declaration
+            iter.next();
+            let var_name = expect_identifier(iter);
+            match iter.next() {
+                Some(Token::Semicolon) => {
+                    println!("{var_name}: declared");
+                    Statement::Declare(var_name, None)
+                },
+                Some(Token::Assignment) => {
+                    println!("Looking for {var_name}: exp");
+                    let exp: Expression = parse_exp(iter);
+                    expect_token(iter, Token::Semicolon);
+                    Statement::Declare(var_name, Some(exp))
+                },
+                _ => {
+                    panic!("Invalid declaration");
+                },
+            }
+        },
+        _ => {                                  //Expression
+            let exp = parse_exp(iter);
+            expect_token(iter, Token::Semicolon);
+            Statement::Expression(exp)
+        }
+    }
+    // expect_token(iter, Token::KeywordReturn);
 
-    expect_token(iter, Token::Semicolon);
+    // let exp = parse_exp(iter);
 
-    Statement::Return(exp)
+    // expect_token(iter, Token::Semicolon);
+
+    // Statement::Return(exp)
 }
 
 // pub fn parse_expression(iter: &mut Peekable<IntoIter<Token>>) -> Expression {
@@ -305,6 +347,20 @@ pub fn parse_term(iter: &mut Peekable<IntoIter<Token>>) -> Expression{
 pub fn parse_factor(iter: &mut Peekable<IntoIter<Token>>) -> Expression{
     
     match iter.next() {
+
+        Some(Token::Identifier(string)) => {
+            match iter.peek() {
+                Some(&Token::Assignment) => {
+                    iter.next();
+                    let exp = parse_exp(iter);
+                    Expression::Assign(string, Box::new(exp))
+                }
+                _ => {
+                    Expression::Var(string)
+                }
+            }
+            
+        }
         Some(Token::IntLiteral(int_str)) => {
             let int_value = int_str.parse::<i32>().expect("Failed to parse integer");
             Expression::Constant(int_value)
