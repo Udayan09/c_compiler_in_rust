@@ -1,29 +1,30 @@
 
 #[derive(Debug, PartialEq)]
 pub enum Token {
-    KeywordInt,
-    KeywordReturn,
-    Identifier(String),
-    IntLiteral(String),
-    OpenParen,
-    CloseParen,
-    OpenBrace,
-    CloseBrace,
-    Semicolon,
-    Negation,
-    BitwiseComplement,
-    LogicalNegation,
-    Addition,
-    Multiplication,
-    Division,
-    LogicalAnd,
-    LogicalOr,
-    Equal,
-    NotEqual,
-    LessThan,
-    LessThanEqual,
-    GreaterThan,
-    GreaterThanEqual,
+    KeywordInt,             // int
+    KeywordReturn,          // return
+    Identifier(String),     // {string}
+    IntLiteral(String),     // 123..
+    OpenParen,              // (
+    CloseParen,             // )
+    OpenBrace,              // {
+    CloseBrace,             // }
+    Semicolon,              // ;
+    Negation,               // -
+    BitwiseComplement,      // ~
+    LogicalNegation,        // !
+    Addition,               // +
+    Multiplication,         // * 
+    Division,               // /
+    LogicalAnd,             // &&
+    LogicalOr,              // ||
+    Equal,                  // ==
+    NotEqual,               // !=
+    LessThan,               // <
+    LessThanEqual,          // <=
+    GreaterThan,            // >
+    GreaterThanEqual,       // >=
+    Assignment,             // =
 }
 
 pub fn lex(source_code: &str) -> Vec<Token> {
@@ -120,8 +121,11 @@ pub fn lex(source_code: &str) -> Vec<Token> {
                 if chars.peek() == Some(&'=') {
                     tokens.push(Token::Equal);
                     chars.next();
-                    continue;
                 }
+                else{
+                    tokens.push(Token::Assignment);
+                }
+                continue;
             },
             '<' => {
                 chars.next();
